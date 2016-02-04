@@ -43,12 +43,14 @@
                        write-fsync="${mongo.writeFsync}"/>
     </mongo:mongo>
 
-    <mongo:db-factory dbname="omni_login" mongo-ref="mongo"/>
+    <mongo:db-factory dbname="${mongo.dbname}" mongo-ref="mongo"/>
 
     <mongo:repositories base-package="com.twomancorp.prototype.login.repository"/>
 
     <bean id="mongoTemplate" class="org.springframework.data.mongodb.core.MongoTemplate">
         <constructor-arg name="mongoDbFactory" ref="mongoDbFactory"/>
     </bean>
+
+    <mvc:resources mapping="/omni/**" location="/"/>
 
 </beans>

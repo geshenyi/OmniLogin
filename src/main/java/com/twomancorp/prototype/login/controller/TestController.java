@@ -9,11 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -36,6 +32,12 @@ public class TestController {
     public ResponseEntity<Iterable<TestModel>> db(){
         Iterable<TestModel> iterable =  testRepository.findAll();
         return new ResponseEntity<>(iterable, HttpStatus.OK);
+    }
+
+    @RequestMapping(value="/testPost", method = RequestMethod.POST)
+    public ResponseEntity<String> testPost(@RequestBody String name){
+        System.out.println(name);
+        return new ResponseEntity<>("success", HttpStatus.OK);
     }
 
     public static void main(String[] args) throws IOException, KeeperException, InterruptedException {

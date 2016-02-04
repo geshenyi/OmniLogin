@@ -1,14 +1,14 @@
 package com.twomancorp.prototype.login.extension;
 
-import org.apache.zookeeper.KeeperException;
+import org.I0Itec.zkclient.IZkDataListener;
+import org.I0Itec.zkclient.ZkClient;
+import org.I0Itec.zkclient.serialize.BytesPushThroughSerializer;
 import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher;
-import org.apache.zookeeper.ZooKeeper;
-import org.apache.zookeeper.data.Stat;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.config.PropertyPlaceholderConfigurer;
 
-import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.Enumeration;
 import java.util.Properties;
 
@@ -22,17 +22,31 @@ public class ZookeeperPropertyConfigurer extends PropertyPlaceholderConfigurer i
         while (enumeration.hasMoreElements()) {
             System.out.println(enumeration.nextElement());
         }
-        try {
-            ZooKeeper zookeeper = new ZooKeeper("127.0.0.1:2181",5000,this);
-            Stat stat = null;
-            zookeeper.getData("/test", this, stat);
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (KeeperException e) {
-            e.printStackTrace();
-        }
+//        try {
+//            ZooKeeper zookeeper = new ZooKeeper("127.0.0.1:2181",5000,this);
+//            Stat stat = null;
+//            zookeeper.getData("/test", this, stat);
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        } catch (InterruptedException e) {
+//            e.printStackTrace();
+//        } catch (KeeperException e) {
+//            e.printStackTrace();
+//        }
+        ZkClient zkClient = new ZkClient("127.0.0.1:2181", 2000, 30000, new BytesPushThroughSerializer());
+        System.out.println(new String(zkClient.<byte[]>readData("/test"), Charset.forName("utf-8")));
+        zkClient.subscribeDataChanges("/test", new IZkDataListener() {
+            @Override
+            public void handleDataChange(String dataPath, Object data) throws Exception {
+                System.out.println(new String((byte[]) data));
+            }
+
+            @Override
+            public void handleDataDeleted(String dataPath) throws Exception {
+
+            }
+        });
+        props.setProperty("mongo.dbname", new String(zkClient.<byte[]>readData("/omnilogin/db/name")));
         super.processProperties(beanFactoryToProcess, props);
 
     }
@@ -40,6 +54,5 @@ public class ZookeeperPropertyConfigurer extends PropertyPlaceholderConfigurer i
     @Override
     public void process(WatchedEvent event) {
         System.out.println(event.getPath());
-
     }
 }
